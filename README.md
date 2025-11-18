@@ -43,19 +43,24 @@ A complete SaaS application for creating intelligent, AI-powered conversational 
 - Common objection patterns
 - Performance metrics per form
 
-✅ **Admin Portal**
-- Clerk authentication
-- Form management dashboard
-- Lead viewing and export
-- CSV export functionality
-- Form duplication
+✅ **User Panel** (`/user`)
+- Forms management page
+- Content upload functionality
+- Embed code generator
+- Form duplication and editing
+
+✅ **Admin Panel** (`/admin`)
+- Platform-wide analytics dashboard
+- View all forms across users
+- User management with role assignment
+- Performance metrics and charts
 
 ## 🏗️ Tech Stack
 
 ### Frontend
 - **Framework**: Next.js 14 (React)
 - **Styling**: Tailwind CSS
-- **Authentication**: Clerk
+- **Authentication**: Supabase Auth
 - **State Management**: Zustand
 - **Data Fetching**: TanStack Query (React Query)
 - **Forms**: React Hook Form
@@ -68,12 +73,13 @@ A complete SaaS application for creating intelligent, AI-powered conversational 
 - **ORM**: SQLAlchemy
 - **AI**: OpenAI GPT-4 API
 - **Document Parsing**: PyPDF2, python-docx
-- **Authentication**: Clerk JWT validation
+- **Authentication**: Supabase JWT validation
 
 ### Infrastructure
 - **Hosting**: Vercel (Frontend) + Any Python host (Backend)
 - **Database**: Supabase PostgreSQL
 - **Storage**: Supabase Storage (for documents)
+- **Auth**: Supabase Authentication
 
 ## 📦 Project Structure
 
@@ -123,9 +129,8 @@ A complete SaaS application for creating intelligent, AI-powered conversational 
 
 - Node.js 18+ and npm/yarn
 - Python 3.11+
-- PostgreSQL (or Supabase account)
+- Supabase account (for database and authentication)
 - OpenAI API key
-- Clerk account
 
 ### 1. Clone and Install Dependencies
 
@@ -143,14 +148,23 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 2. Set Up Environment Variables
+### 2. Set Up Supabase
+
+1. Create a new project on [Supabase](https://supabase.com)
+2. Go to **Settings > API** and copy:
+   - Project URL
+   - `anon` public key
+   - JWT Secret (from Settings > API > JWT Settings)
+3. Go to **Settings > Database** and copy the connection string
+
+### 3. Set Up Environment Variables
 
 #### Frontend (.env.local)
 
 ```bash
 # Create .env.local in root directory
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
@@ -159,34 +173,29 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ```bash
 # Create .env in backend directory
-DATABASE_URL=postgresql://user:password@localhost:5432/ai_form_builder
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:5432/postgres
 OPENAI_API_KEY=sk-xxxxx
-CLERK_SECRET_KEY=sk_test_xxxxx
+SUPABASE_JWT_SECRET=your-jwt-secret
 FLASK_ENV=development
 SECRET_KEY=your-secret-key-here
 FRONTEND_URL=http://localhost:3000
 ```
 
-### 3. Set Up Database
+### 4. Set Up User Roles (Optional for Admin Panel)
 
-**Option A: Local PostgreSQL**
+To create admin users, you need to set the `role` in user metadata:
 
-```bash
-createdb ai_form_builder
-```
+1. Go to Supabase Dashboard > Authentication > Users
+2. Find your user and click to edit
+3. In the **User Metadata** section, add:
+   ```json
+   {
+     "role": "admin"
+   }
+   ```
+4. Save changes
 
-**Option B: Supabase**
-
-1. Create a new project on [Supabase](https://supabase.com)
-2. Copy the connection string from Settings > Database
-3. Update `DATABASE_URL` in `backend/.env`
-
-### 4. Set Up Clerk Authentication
-
-1. Create account at [Clerk](https://clerk.com)
-2. Create a new application
-3. Copy the publishable and secret keys
-4. Update both `.env.local` and `backend/.env`
+Regular users will have `role: "user"` by default.
 
 ### 5. Get OpenAI API Key
 
@@ -216,8 +225,14 @@ Frontend runs on `http://localhost:3000`
 ### 7. Access the Application
 
 1. Open `http://localhost:3000`
-2. Sign up/sign in with Clerk
-3. Create your first form!
+2. Sign up with your email and password (Supabase Auth)
+3. Check your email for verification link
+4. Sign in and start creating forms!
+
+#### Panel Access
+
+- **User Panel**: `http://localhost:3000/user` - Manage forms, upload content, get embed codes
+- **Admin Panel**: `http://localhost:3000/admin` - View analytics, manage all forms and users (requires admin role)
 
 ## 📖 Usage Guide
 
@@ -413,9 +428,9 @@ For issues and questions:
 ## 🙏 Acknowledgments
 
 - Built with [Next.js](https://nextjs.org/)
-- Authentication by [Clerk](https://clerk.com)
+- Authentication by [Supabase Auth](https://supabase.com/auth)
 - AI powered by [OpenAI](https://openai.com)
-- Database by [Supabase](https://supabase.com)
+- Database & Infrastructure by [Supabase](https://supabase.com)
 
 ---
 

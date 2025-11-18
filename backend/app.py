@@ -33,7 +33,11 @@ app.register_blueprint(chat_bp, url_prefix='/api/chat')
 app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
 app.register_blueprint(documents_bp, url_prefix='/api/documents')
 
-# Authentication middleware
+# Supabase JWT verification
+import requests
+
+SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')
+
 def verify_token(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -47,18 +51,36 @@ def verify_token(f):
             if token.startswith('Bearer '):
                 token = token[7:]
             
-            # Verify with Clerk (simplified - in production use Clerk's JWT verification)
-            # For now, we'll decode without verification for development
-            # decoded = jwt.decode(token, options={"verify_signature": False})
+            # Verify Supabase JWT token
+            # Note: In production, you should verify the JWT signature using the Supabase JWT secret
+            decoded = jwt.decode(
+                token,
+                SUPABASE_JWT_SECRET,
+                algorithms=['HS256'],
+                audience='authenticated'
+            ) if SUPABASE_JWT_SECRET else jwt.decode(token, options={"verify_signature": False})
             
-            # In production, verify with Clerk's public key
-            request.user_id = token  # Simplified for development
+            # Extract user ID from token
+            request.user_id = decoded.get('sub')
+            request.user_role = decoded.get('user_metadata', {}).get('role', 'user')
             
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError as e:
+            return jsonify({'error': f'Invalid token: {str(e)}'}), 401
         except Exception as e:
             return jsonify({'error': 'Invalid token'}), 401
         
         return f(*args, **kwargs)
     
+    return decorated_function
+
+def require_admin(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not hasattr(request, 'user_role') or request.user_role != 'admin':
+            return jsonify({'error': 'Admin access required'}), 403
+        return f(*args, **kwargs)
     return decorated_function
 
 @app.route('/api/health', methods=['GET'])
