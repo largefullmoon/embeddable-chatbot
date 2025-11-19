@@ -95,7 +95,15 @@ app/
 │   ├── layout.tsx             # User panel layout
 │   ├── page.tsx               # Redirect to forms
 │   ├── forms/
-│   │   └── page.tsx           # Forms management
+│   │   ├── page.tsx           # Forms list
+│   │   ├── new/
+│   │   │   └── page.tsx       # Create new form
+│   │   └── [id]/
+│   │       ├── page.tsx       # Form details
+│   │       └── edit/
+│   │           └── page.tsx   # Edit form
+│   ├── leads/
+│   │   └── page.tsx           # Leads management
 │   ├── content/
 │   │   └── page.tsx           # Content upload
 │   └── embed/

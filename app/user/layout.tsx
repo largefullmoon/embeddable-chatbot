@@ -36,6 +36,7 @@ export default function UserLayout({
 
   const navigation = [
     { name: 'Forms', href: '/user/forms' },
+    { name: 'Leads', href: '/user/leads' },
     { name: 'Content Upload', href: '/user/content' },
     { name: 'Embed Code', href: '/user/embed' },
   ]
